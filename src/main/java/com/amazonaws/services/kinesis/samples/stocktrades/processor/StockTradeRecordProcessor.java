@@ -18,6 +18,7 @@ package com.amazonaws.services.kinesis.samples.stocktrades.processor;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
+import software.amazon.awssdk.core.SdkBytes;
 import software.amazon.kinesis.exceptions.InvalidStateException;
 import software.amazon.kinesis.exceptions.ShutdownException;
 import software.amazon.kinesis.exceptions.ThrottlingException;
@@ -82,21 +83,30 @@ public class StockTradeRecordProcessor implements ShardRecordProcessor {
             }
         } catch (Throwable t) {
             log.error("Caught throwable while processing records. Aborting.");
+            t.printStackTrace();
             Runtime.getRuntime().halt(1);
         }
 
     }
 
     private void reportStats() {
-        // TODO: Implement method
+        System.out.println("****** Shard " + kinesisShardId + " stats for last 1 minute ******\n" +
+                stockStats + "\n" +
+                "****************************************************************\n");
     }
 
     private void resetStats() {
-        // TODO: Implement method
+        stockStats = new StockStats();
     }
 
     private void processRecord(KinesisClientRecord record) {
-        // TODO: Implement method
+        StockTrade trade = StockTrade.fromJsonAsBytes(SdkBytes.fromByteBuffer(record.data()).asByteArray());
+        if (trade == null) {
+            log.warn("Skipping record. Unable to parse record into StockTrade. Partition Key: " + record.partitionKey());
+            return;
+        }
+        System.out.println("GET " + trade);
+        stockStats.addStockTrade(trade);
     }
 
     @Override

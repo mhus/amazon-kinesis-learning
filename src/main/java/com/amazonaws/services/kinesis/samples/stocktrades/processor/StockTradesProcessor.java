@@ -60,9 +60,9 @@ public class StockTradesProcessor {
      *
      */
     private static void setLogLevels() {
-        ROOT_LOGGER.setLevel(Level.WARNING);
+        ROOT_LOGGER.setLevel(Level.INFO);
         // Set this to INFO for logging at INFO level. Suppressed for this example as it can be noisy.
-        PROCESSOR_LOGGER.setLevel(Level.WARNING);
+        PROCESSOR_LOGGER.setLevel(Level.INFO);
     }
 
     public static void main(String[] args) throws Exception {

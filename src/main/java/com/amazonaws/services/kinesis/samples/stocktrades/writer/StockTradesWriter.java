@@ -16,6 +16,7 @@
 package com.amazonaws.services.kinesis.samples.stocktrades.writer;
 
 
+import java.nio.ByteBuffer;
 import java.util.concurrent.ExecutionException;
 
 
@@ -79,7 +80,24 @@ public class StockTradesWriter {
      */
     private static void sendStockTrade(StockTrade trade, KinesisAsyncClient kinesisClient,
                                        String streamName) {
-        // TODO: Implement method
+        byte[] bytes = trade.toJsonAsBytes();
+        // The bytes could be null if there is an issue with the JSON serialization by the Jackson JSON library.
+        if (bytes == null) {
+            LOG.warn("Could not get JSON bytes for stock trade");
+            return;
+        }
+
+        LOG.info("Putting trade: " + trade.toString());
+        PutRecordRequest putRecord = PutRecordRequest.builder()
+                .streamName(streamName)
+                .partitionKey(trade.getTickerSymbol())
+                .data(SdkBytes.fromByteArray(bytes)).build();
+
+        try {
+            kinesisClient.putRecord(putRecord);
+        } catch (Exception ex) {
+            LOG.warn("Error sending record to Amazon Kinesis.", ex);
+        }
     }
 
     public static void main(String[] args) throws Exception {
@@ -94,7 +112,7 @@ public class StockTradesWriter {
         }
 
         KinesisAsyncClient kinesisClient = KinesisClientUtil.createKinesisAsyncClient(KinesisAsyncClient.builder().region(region));
-
+        System.out.println("Connected");
         // Validate that the stream exists and is active
         validateStream(kinesisClient, streamName);
 
